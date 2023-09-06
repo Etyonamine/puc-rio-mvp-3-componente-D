@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String, Integer
 from model import Base
-
+from sqlalchemy.orm import relationship
 
 class TipoOperacao(Base):
     __tablename__ = 'tipo_operacao'
@@ -9,8 +9,8 @@ class TipoOperacao(Base):
     descricao = Column("ds_operacao_tip",String(100))
 
     ## criar o vinculo com os modelos do veiculo
-    """ modelos = relationship("Modelo", cascade="all,delete",
-                                back_populates="marca")  """
+    tipo_operacao = relationship("Operacao", back_populates="tipo_operacao")
+    
     
     def __init__(self, sigla: str, descricao: str):
         """

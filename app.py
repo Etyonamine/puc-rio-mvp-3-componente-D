@@ -5,7 +5,7 @@ from urllib.parse import unquote
 
 from sqlalchemy.exc import IntegrityError
 
-from model import Session, TipoOperacao
+from model import Session, TipoOperacao, Operacao
 from logger import logger
 from schemas import *
 from flask_cors import CORS
@@ -21,6 +21,10 @@ home_tag = Tag(name="Documentação",
                              Redoc ou RapiDoc")
 
 tipo_operacao_Tag = Tag(name="TipoOperacao", 
+                        description="Adição, visualização,\
+                                    edição e remoção de tipo_operacaos de veiculos à base")
+
+operacao_Tag = Tag(name="Operacao", 
                         description="Adição, visualização,\
                                     edição e remoção de tipo_operacaos de veiculos à base")
  
@@ -242,4 +246,45 @@ def get_tipo_operacao_id(query: TipoOperacaoBuscaDelSchema):
         logger.warning(
             f"Erro ao consultar a tipo_operacao do operacao, {error_msg}")
         return {"message": error_msg}, 500
-   
+
+
+
+# ***************************************************  Metodos do tipo de operacao ***************************************
+# Novo registro na tabela tipo_operacao do veiculo
+@app.post('/tipo_operacao', tags=[tipo_operacao_Tag],
+          responses={"201": TipoOperacaoViewSchema,
+                     "404": ErrorSchema,
+                     "500": ErrorSchema})
+def add_tipo_operacao(form: TipoOperacaoSchema):
+    """ Adicionar a tipo_operacao de operacao """
+    tipo_operacao = TipoOperacao(      
+      sigla = form.sigla,
+      descricao = form.descricao
+    )
+
+    logger.debug(f"Adicionando o tipo_operacao de operacao com a sigla {tipo_operacao.sigla}\
+                     descricao { tipo_operacao.descricao }")
+    
+    try:
+        # criando conexão com a base
+        session = Session()
+        # adicionando  
+        session.add(tipo_operacao)
+        # efetivando o comando de adição de novo item na tabela
+        session.commit()
+        logger.debug(f"Adicionado o tipo_operacao de operacao com a sigla {tipo_operacao.sigla}\
+                      descricao{tipo_operacao.descricao}")
+        return apresenta_tipo_operacao(tipo_operacao), 200
+
+    except IntegrityError as e:
+        # como a duplicidade do nome é a provável razão do IntegrityError
+        error_msg = f"O tipo de operacao com a sigla {tipo_operacao.sigla} já foi salvo anteriormente na base :/"
+        logger.warning(
+            f"Erro ao adicionar a tipo_operacao do operacao com nome ={tipo_operacao.descricao}', {error_msg}")
+        return {"message": error_msg}, 409
+
+    except Exception as e:
+        # caso um erro fora do previsto
+        error_msg = "Não foi possível salvar novo item :/"
+        logger.warning(f"Erro ao adicionar um novo tipo_operacao de operacao, {error_msg}")
+        return {"message": error_msg}, 400
