@@ -6,11 +6,10 @@ from schemas.tipo_operacao import TipoOperacaoViewSchema
 
 
 class OperacaoSchema(BaseModel):
-    """Define como um novo registro que será inserido """    
-    codigo: int = 1
+    """Define como um novo registro que será inserido """        
     codigo_veiculo: int = 1    
     codigo_tipo_operacao: int = 1
-
+    observacao: str  = ""
 
 
 class OperacaoViewSchema(BaseModel):
@@ -54,8 +53,8 @@ def apresenta_operacao(operacao: Operacao):
         "codigo_veiculo": operacao.codigo_veiculo,
         "observacao": operacao.observacao,
         "tipo_operacao": [{"codigo": operacao.codigo_tipo_operacao ,
-                           "sigla": operacao.codigo_tipo_operacao.sigla,
-                           "descricao": operacao.codigo_tipo_operacao.descricao
+                           "sigla": operacao.tipo_operacao.sigla,
+                           "descricao": operacao.tipo_operacao.descricao
                            }]
         
     }
@@ -75,8 +74,8 @@ def apresenta_lista_operacao(lista: List[Operacao]):
             "codigo_veiculo": item.codigo_veiculo,
             "observacao": item.observacao,
             "tipo_operacao": [{"codigo": item.codigo_tipo_operacao ,
-                            "sigla": item.codigo_tipo_operacao.sigla,
-                            "descricao": item.codigo_tipo_operacao.descricao
+                            "sigla": item.tipo_operacao.sigla,
+                            "descricao": item.tipo_operacao.descricao
                             }]
         })
 

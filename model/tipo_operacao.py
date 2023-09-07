@@ -9,7 +9,7 @@ class TipoOperacao(Base):
     descricao = Column("ds_operacao_tip",String(100))
 
     ## criar o vinculo com os modelos do veiculo
-    tipo_operacao = relationship("Operacao", back_populates="tipo_operacao")
+    operacoes = relationship("Operacao", back_populates="tipo_operacao")
     
     
     def __init__(self, sigla: str, descricao: str):

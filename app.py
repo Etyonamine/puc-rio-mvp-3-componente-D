@@ -251,40 +251,202 @@ def get_tipo_operacao_id(query: TipoOperacaoBuscaDelSchema):
 
 # ***************************************************  Metodos do tipo de operacao ***************************************
 # Novo registro na tabela tipo_operacao do veiculo
-@app.post('/tipo_operacao', tags=[tipo_operacao_Tag],
-          responses={"201": TipoOperacaoViewSchema,
+@app.post('/operacao', tags=[operacao_Tag],
+          responses={"201": OperacaoViewSchema,
                      "404": ErrorSchema,
                      "500": ErrorSchema})
-def add_tipo_operacao(form: TipoOperacaoSchema):
-    """ Adicionar a tipo_operacao de operacao """
-    tipo_operacao = TipoOperacao(      
-      sigla = form.sigla,
-      descricao = form.descricao
+def add_operacao(form: OperacaoSchema):
+    """ Adicionar a operacao """
+    operacao = Operacao(      
+      codigo_tipo_operacao =  form.codigo_tipo_operacao,
+      codigo_veiculo = form.codigo_veiculo,
+      observacao = form.observacao
     )
 
-    logger.debug(f"Adicionando o tipo_operacao de operacao com a sigla {tipo_operacao.sigla}\
-                     descricao { tipo_operacao.descricao }")
+    logger.debug(f"Adicionando a operacao com o codigo tipo {operacao.codigo_tipo_operacao}\
+                  e veículo {operacao.codigo_veiculo}")
     
     try:
         # criando conexão com a base
         session = Session()
+
         # adicionando  
-        session.add(tipo_operacao)
+        session.add(operacao)
+
         # efetivando o comando de adição de novo item na tabela
         session.commit()
-        logger.debug(f"Adicionado o tipo_operacao de operacao com a sigla {tipo_operacao.sigla}\
-                      descricao{tipo_operacao.descricao}")
-        return apresenta_tipo_operacao(tipo_operacao), 200
+        message = f"Adicionado operacao com o codigo tipo {operacao.codigo_tipo_operacao}\
+                  e veículo {operacao.codigo_veiculo}"
+        logger.debug(message)
+        logger.info(message)
+        return apresenta_operacao(operacao), 200
 
     except IntegrityError as e:
         # como a duplicidade do nome é a provável razão do IntegrityError
-        error_msg = f"O tipo de operacao com a sigla {tipo_operacao.sigla} já foi salvo anteriormente na base :/"
+        error_msg = f"A operacao já foi salvo anteriormente na base :/"
         logger.warning(
-            f"Erro ao adicionar a tipo_operacao do operacao com nome ={tipo_operacao.descricao}', {error_msg}")
+            f"Erro ao adicionar a operacao")
         return {"message": error_msg}, 409
 
     except Exception as e:
         # caso um erro fora do previsto
         error_msg = "Não foi possível salvar novo item :/"
-        logger.warning(f"Erro ao adicionar um novo tipo_operacao de operacao, {error_msg}")
-        return {"message": error_msg}, 400
+        logger.warning(f"Erro ao adicionar a operacao erro = {e}")
+        return {"message": error_msg}, 500
+
+
+# Consulta de todos as operacoes
+@app.get('/operacoes', tags=[operacao_Tag],
+         responses={"200": ListaOperacaosSchema, "500": ErrorSchema})
+def get_operacoes():
+    """Consulta as operacoes 
+
+    Retorna uma listagem de representações das operacoes
+    """
+    logger.debug(f"Consultando as operacoes   ")
+    try:
+        # criando conexão com a base
+        session = Session()
+        # fazendo a busca
+        lista = session.query(Operacao).all()
+
+        if not lista:
+            # se não há operacaos cadastrados
+            return {"operacoes": []}, 200
+        else:
+            logger.debug(f"%d operacoes encontrados" %
+                         len(lista))
+            # retorna a representação de tipo_operacaos
+            return apresenta_lista_operacao(lista), 200
+    except Exception as e:
+        # caso um erro fora do previsto
+        error_msg = f"Não foi possível consultar as operacoes de listas :/{str(e)}"
+        logger.warning(
+            f"Erro ao consultar as operacoes, {error_msg}")
+        return {"message": error_msg}, 500
+
+
+# Consulta por código de operacao
+@app.get('/operacao_id', tags=[operacao_Tag],
+         responses={"200": OperacaoViewSchema, "404": ErrorSchema,
+                    "500": ErrorSchema})
+def get_operacao_id(query: OperacaoBuscaDelSchema):
+    """Consulta uma operacao especifica pelo codigo
+
+    Retorna uma representação da operacao  
+    """
+
+    codigo = query.codigo
+
+    logger.debug(
+        f"Consultando a operacao por codigo = #{codigo} ")
+    try:
+        # criando conexão com a base
+        session = Session()
+        # fazendo a busca
+        operacao = session.query(Operacao)\
+                             .filter(Operacao.codigo == codigo).first()
+
+        if not operacao:
+            # se não há cadastrado
+            error_msg = "Operacao não encontrado na base :/"
+            logger.warning(f"Erro ao buscar a operacao error, {error_msg}")
+            return {"message": error_msg}, 404
+        else:
+            logger.debug(
+                f"A operacao com o código #{codigo} encontrado")
+            # retorna a representação de  s
+            return apresenta_operacao(operacao), 200
+    except Exception as e:
+        # caso um erro fora do previsto
+        error_msg = f"Não foi possível consultar a operacao:/{str(e)}"
+        logger.warning(
+            f"Erro ao consultar a operacao com erro {e}, {error_msg}")
+        return {"message": error_msg}, 500
+
+
+# Edicao registro na tabela operacao do veiculo
+@app.put('/operacao', tags=[operacao_Tag],
+         responses={"204": None,
+                    "404": ErrorSchema,
+                    "500": ErrorSchema})
+def upd_operacao(form: OperacaoEditSchema):
+    """Editar a operacao cadastrado na base """
+    codigo = form.codigo
+    observacao = form.observacao
+    
+    logger.debug(f"Editando a operacao de operacao #{codigo}")
+    try:
+
+        # criando conexão com a base
+        session = Session()
+        
+        count = session.query(Operacao).filter(
+            Operacao.codigo == codigo)\
+                        .update({"observacao": observacao})
+
+        session.commit()
+
+        if count:
+            message = f"Editado com sucesso a operacao com o código {codigo}!"
+            # retorna sem representação com apenas o codigo http 204
+            logger.debug(message)
+            return message, 204
+        else:
+            error_msg = f"A operacao com o código {codigo} não foi encontrado na base"
+            logger.warning(
+                f"Erro ao editar a operacao com o código {codigo} , {error_msg}")
+            return error_msg, 404
+
+    except Exception as e:
+        # caso um erro fora do previsto
+        error_msg = f"Não foi possível editar a operacao :/{e.__str__}"
+        logger.warning(
+            f"Erro ao editar a operacao com o código  #'{codigo}', {error_msg}")
+        return {"message": error_msg}, 500
+
+
+# Remoção de um registro de operacao
+@app.delete('/operacao', tags=[operacao_Tag],
+            responses={"204": None, "404": ErrorSchema, "500": ErrorSchema})
+def del_operacao(form: OperacaoBuscaDelSchema):
+    """Exclui uma operacao da base de dados através do atributo codigo
+
+    Retorna uma mensagem de exclusão com sucesso.
+    """
+    codigo = form.codigo
+    logger.debug(f"Excluindo a operacaoID #{codigo}")
+    try:
+        # criando conexão com a base
+        session = Session()
+        
+        # fazendo a remoção
+        count = session.query(Operacao).filter(
+                Operacao.codigo == codigo).delete()
+
+        session.commit()
+
+        if count:
+            # retorna sem representação com apenas o codigo http 204
+            message = f"Excluido a operacao com o codigo #{codigo}"
+            logger.debug(message)
+            return message, 204
+        else:
+            # se o   não foi encontrado retorno o codigo http 404
+            error_msg = "A operacao não foi encontrada na base"
+
+            logger.warning(
+                f"Erro ao excluir a operacao com o codigo #'{codigo}', {error_msg}")
+
+            return '', 404
+            
+    except Exception as e:
+        # caso um erro fora do previsto
+        error_msg = "Não foi possível excluir a operacao"
+
+        logger.warning(
+            f"Erro ao excluir a operacao com\
+            o codigo #'{codigo}' - erro = {e},\
+            {error_msg}")
+
+        return {"message": error_msg}, 500

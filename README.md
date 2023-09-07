@@ -1,7 +1,8 @@
-# Minha API
+# Minha API - componente D
 
-Este API é a parte backend da entrega do MVP para o primeiro sprint do  **Curso de Pós Graduação em Engenharia de software** 
+Este API é a parte backend da entrega do MVP para o terceiro (3º) sprint do  **Curso de Pós Graduação em Engenharia de software** 
 
+Serviço que tem o contexto de negocio de gravar informações de operação do estacionamento
  
 ## Pré-requisito
 ---
@@ -29,15 +30,15 @@ Este API é a parte backend da entrega do MVP para o primeiro sprint do  **Curso
 
 3.1) Executado sem reload
 ```
-    (env)$ flask run --host 0.0.0.0 --port 5000
+    (env)$ flask run --host 0.0.0.0 --port 5001
 ```
 3.2)Em modo de desenvolvimento é recomendado executar utilizando o parâmetro reload, que reiniciará o servidor
 automaticamente após uma mudança no código fonte. 
 
 ```
-    (env)$ flask run --host 0.0.0.0 --port 5000 --reload
+    (env)$ flask run --host 0.0.0.0 --port 5001 --reload
 ```
 
-4)Para acessar os serviços da api clique no link = [http://localhost:5000/#/](http://localhost:5000/#/) no navegador para verificar o status da API em execução.
+4)Para acessar os serviços da api clique no link = [http://localhost:5000/#/](http://localhost:5001/#/) no navegador para verificar o status da API em execução.
 
 5)Selecione uma das opções : swagger / redoc / rapiDoc para visualizar via interface os serviços e métodos.
