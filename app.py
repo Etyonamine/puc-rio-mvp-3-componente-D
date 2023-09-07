@@ -66,7 +66,7 @@ def add_tipo_operacao(form: TipoOperacaoSchema):
 
     except IntegrityError as e:
         # como a duplicidade do nome é a provável razão do IntegrityError
-        error_msg = f"O tipo de operacao com a sigla {tipo_operacao.sigla} já foi salvo anteriormente na base :/"
+        error_msg = f"O tipo de operacao com a sigla {tipo_operacao.sigla} já foi salvo anteriormente na base :/{e}"
         logger.warning(
             f"Erro ao adicionar a tipo_operacao do operacao com nome ={tipo_operacao.descricao}', {error_msg}")
         return {"message": error_msg}, 409
@@ -74,7 +74,7 @@ def add_tipo_operacao(form: TipoOperacaoSchema):
     except Exception as e:
         # caso um erro fora do previsto
         error_msg = "Não foi possível salvar novo item :/"
-        logger.warning(f"Erro ao adicionar um novo tipo_operacao de operacao, {error_msg}")
+        logger.warning(f"Erro ao adicionar um novo tipo_operacao de operacao - error {e}, {error_msg}")
         return {"message": error_msg}, 400
 
 
@@ -171,7 +171,7 @@ def del_tipo_operacao(form: TipoOperacaoBuscaDelSchema):
             return '', 404
     except Exception as e:
         # caso um erro fora do previsto
-        error_msg = "Não foi possível excluir tipo_operacao  :/"
+        error_msg = f"Não foi possível excluir tipo_operacao  :/{e}"
         logger.warning(
             f"Erro ao excluir a tipo_operacao com\
             o codigo #'{codigo}', {error_msg}")
