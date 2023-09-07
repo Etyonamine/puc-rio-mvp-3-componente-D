@@ -1,7 +1,6 @@
-from datetime import datetime
+import json
 from flask_openapi3 import OpenAPI, Info, Tag
 from flask import redirect
-from urllib.parse import unquote
 
 from sqlalchemy.exc import IntegrityError
 
@@ -9,6 +8,9 @@ from model import Session, TipoOperacao, Operacao
 from logger import logger
 from schemas import *
 from flask_cors import CORS
+import pip._vendor.requests 
+
+
 
 
 info = Info(title="Minha API", version="1.0.0")
@@ -262,14 +264,25 @@ def add_operacao(form: OperacaoSchema):
       codigo_veiculo = form.codigo_veiculo,
       observacao = form.observacao
     )
-
-    logger.debug(f"Adicionando a operacao com o codigo tipo {operacao.codigo_tipo_operacao}\
-                  e veículo {operacao.codigo_veiculo}")
     
     try:
+        print("executando a consulta do veiculo")
+        print(f"valor parametro {operacao.codigo_veiculo}")
+        if not existe_veiculo(operacao.codigo_veiculo):
+            print("não existe o veiculo")
+            logger.debug(f"Adicionando a operacao com o veiculo {operacao.codigo_veiculo}")
+            error_msg = "O veículo não existe!"
+
+            logger.warning(
+                f"Erro ao adicionar a operacao\
+                    codigo tipo de operacao #'{operacao.codigo_tipo_operacao}'\
+                    e veiculo codigo #'{operacao.codigo_veiculo}', {error_msg}")
+
+            return '', 400   
+
         # criando conexão com a base
         session = Session()
-
+        print("executando adicionando a operacao")
         # adicionando  
         session.add(operacao)
 
@@ -365,6 +378,45 @@ def get_operacao_id(query: OperacaoBuscaDelSchema):
         return {"message": error_msg}, 500
 
 
+# Consulta por código de veiculo
+@app.get('/operacao_veiculo_id', tags=[operacao_Tag],
+         responses={"200": OperacaoViewSchema, "404": ErrorSchema,
+                    "500": ErrorSchema})
+def get_operacao_veiculo_id(query: OperacaoBuscaPorVeiculoSchema):
+    """Consulta uma operacao especifica pelo codigo do veiculo
+
+    Retorna uma lista de representações da operacao  
+    """
+
+    codigo_veiculo = query.codigo_veiculo
+
+    logger.debug(
+        f"Consultando a operacao por codigo veiculo = #{codigo_veiculo} ")
+    try:
+        # criando conexão com a base
+        session = Session()
+        # fazendo a busca
+        operacoes = session.query(Operacao)\
+                             .filter(Operacao.codigo_veiculo == codigo_veiculo)
+
+        if not operacoes:
+            # se não há cadastrado
+            error_msg = "Operacao não encontrado na base :/"
+            logger.warning(f"Erro ao buscar a operacao error, {error_msg}")
+            return {"message": error_msg}, 404
+        else:
+            logger.debug(
+                f"A operacao com o código do veiculo #{codigo_veiculo} encontrado")
+            # retorna a representação de  s
+            return apresenta_lista_operacao(operacoes), 200
+    except Exception as e:
+        # caso um erro fora do previsto
+        error_msg = f"Não foi possível consultar a operacao:/{str(e)}"
+        logger.warning(
+            f"Erro ao consultar a operacao com erro {e}, {error_msg}")
+        return {"message": error_msg}, 500
+
+
 # Edicao registro na tabela operacao do veiculo
 @app.put('/operacao', tags=[operacao_Tag],
          responses={"204": None,
@@ -450,3 +502,20 @@ def del_operacao(form: OperacaoBuscaDelSchema):
             {error_msg}")
 
         return {"message": error_msg}, 500
+
+""" Metodos privados 
+
+"""
+
+# Consulta a API de veiculo
+def existe_veiculo(codigo_veiculo: int):
+    try:        
+        response = pip._vendor.requests.get(f"http://127.0.0.1:5000/veiculo_id?codigo={codigo_veiculo}")
+        
+        if (len(response.text) == 0):
+            return False
+
+        return True
+
+    except Exception as e:
+        print(f"Ocorreu erro ao verificar se existe o veicul erro = {e}")

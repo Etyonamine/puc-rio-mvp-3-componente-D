@@ -23,6 +23,11 @@ class OperacaoViewSchema(BaseModel):
     tipo_operacao: TipoOperacaoViewSchema
 
 
+class OperacaoBuscaPorVeiculoSchema(BaseModel):
+    """ Define como será recebido os dados para a pesquisa """
+    codigo_veiculo: int = 1
+
+    
 class OperacaoEditSchema(BaseModel):
     """Define como será recebido os dados para a edição """
     codigo: int = 1
@@ -72,6 +77,8 @@ def apresenta_lista_operacao(lista: List[Operacao]):
             "codigo": item.codigo,
             "codigo_tipo_operacao": item.codigo_tipo_operacao,
             "codigo_veiculo": item.codigo_veiculo,
+            "data_entrada": item.data_entrada,
+            "data_saida": item.data_saida,
             "observacao": item.observacao,
             "tipo_operacao": [{"codigo": item.codigo_tipo_operacao ,
                             "sigla": item.tipo_operacao.sigla,
