@@ -6,7 +6,7 @@ from sqlalchemy.orm import relationship
 class Operacao(Base):
     __tablename__ = 'operacao'
     codigo = Column("id_operacao", Integer, primary_key=True)    
-    codigo_veiculo = Column("id_veiculo",Integer)
+    placa_veiculo = Column("placa_veiculo",String(7))
     codigo_tipo_operacao = Column("id_operacao_tip", Integer,\
                              ForeignKey("tipo_operacao.id_operacao_tip"),
                              nullable=False)     
@@ -17,7 +17,7 @@ class Operacao(Base):
     tipo_operacao = relationship("TipoOperacao", back_populates="operacoes")
 
     ## criar a operacao    
-    def __init__(self, codigo_veiculo: Integer,
+    def __init__(self, placa_veiculo: str,
                 codigo_tipo_operacao: Integer, 
                 observacao: String,
                 data_entrada:Union[DateTime, None] = None):
@@ -32,6 +32,6 @@ class Operacao(Base):
                            à base
         """
         self.data_entrada = data_entrada
-        self.codigo_veiculo = codigo_veiculo
+        self.placa_veiculo = placa_veiculo
         self.codigo_tipo_operacao = codigo_tipo_operacao
         self.observacao = observacao

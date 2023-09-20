@@ -7,7 +7,7 @@ from schemas.tipo_operacao import TipoOperacaoViewSchema
 
 class OperacaoSchema(BaseModel):
     """Define como um novo registro que será inserido """        
-    codigo_veiculo: int = 1    
+    placa_veiculo: str = "ABC1234"   
     codigo_tipo_operacao: int = 1
     observacao: str  = ""
 
@@ -19,13 +19,13 @@ class OperacaoViewSchema(BaseModel):
     data_entrada: str = "2023/01/01 22:00:00"
     data_saida: str = "2023/01/01 22:00:00"
     codigo_tipo_operacao: int = 1
-    codigo_veiculo: int = 1
+    placa_veiculo: str = "ABC1234"
     tipo_operacao: TipoOperacaoViewSchema
 
 
 class OperacaoBuscaPorVeiculoSchema(BaseModel):
     """ Define como será recebido os dados para a pesquisa """
-    codigo_veiculo: int = 1
+    placa_veiculo: str = "ABC1234"
 
     
 class OperacaoEditSchema(BaseModel):
@@ -55,7 +55,7 @@ def apresenta_operacao(operacao: Operacao):
     return {
         "codigo": operacao.codigo,
         "codigo_tipo_operacao": operacao.codigo_tipo_operacao,
-        "codigo_veiculo": operacao.codigo_veiculo,
+        "placa_veiculo": operacao.placa_veiculo,
         "observacao": operacao.observacao,
         "tipo_operacao": [{"codigo": operacao.codigo_tipo_operacao ,
                            "sigla": operacao.tipo_operacao.sigla,
@@ -76,7 +76,7 @@ def apresenta_lista_operacao(lista: List[Operacao]):
         result.append({
             "codigo": item.codigo,
             "codigo_tipo_operacao": item.codigo_tipo_operacao,
-            "codigo_veiculo": item.codigo_veiculo,
+            "placa_veiculo": item.placa_veiculo,
             "data_entrada": item.data_entrada,
             "data_saida": item.data_saida,
             "observacao": item.observacao,

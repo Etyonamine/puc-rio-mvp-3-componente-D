@@ -90,46 +90,32 @@ def upd_tipo_operacao(form: TipoOperacaoEditSchema):
     codigo = form.codigo
     sigla = form.sigla
     descricao = form.descricao
-
+    logger.info(f"Editando a tipo_operacao de operacao #{codigo} e sigla {sigla}")
     logger.debug(f"Editando a tipo_operacao de operacao #{codigo}")
     try:
 
         # criando conexão com a base
         session = Session()
-        # Consulta se ja existe a descricao com outro codigo
-        tipo_operacao = session.query(TipoOperacao)\
-                             .filter(TipoOperacao.sigla ==  sigla
-                                and TipoOperacao.codigo != codigo
-                             ).first()
-
-        if tipo_operacao:
-            # se foi encontrado retorna sem dar o commit
-            error_msg = "Existe outro registro com\
-                         a mesma sigla!"
-            logger.warning(
-                f"Erro ao editar a tipo_operacao com o codigo #{codigo} {error_msg}")
-            return {"message": error_msg}, 400
-        else:            
-            count = session.query(TipoOperacao).filter(
-                TipoOperacao.codigo == codigo)\
-                            .update({"descricao": descricao,
-                                    "sigla": sigla})
-            session.commit()
-            if count:
-                # retorna sem representação com apenas o codigo http 204
-                logger.debug(f"Editado a tipo_operacao com a sigla {sigla}")
-                return '', 204
-            else:
-                error_msg = f"O tipo_operacao com a sigla {sigla} não foi encontrado na base"
-                logger.warning(
-                    f"Erro ao editar o tipo_operacao com a sigla {sigla} , {error_msg}")
-                return '', 404
+ 
+        count = session.query(TipoOperacao).filter(
+            TipoOperacao.codigo == codigo)\
+                        .update({"descricao": descricao,
+                                "sigla": sigla})
+        session.commit()
+        if count:
+            # retorna sem representação com apenas o codigo http 204
+            logger.debug(f"Editado a tipo_operacao com a sigla {sigla}")
+            return '', 204
+        else:
+            error_msg = f"O tipo_operacao com a sigla {sigla} não foi encontrado na base"
+            logger.warning(f"Erro ao editar o tipo_operacao com a sigla {sigla} , {error_msg}")
+            return ' ', 404
     except Exception as e:
         # caso um erro fora do previsto
-        error_msg = f"Não foi possível editar a tipo_operacao :/{e.__str__}"
+        error_msg = f"Esta sigla já existe com outro codigo! :/{e.__str__}"
         logger.warning(
             f"Erro ao editar o tipo_operacao com a sigla  #'{sigla}', {error_msg}")
-        return {"message": error_msg}, 500
+        return {"message": error_msg}, 400
 
 
 # Remoção de um registro de tipo_operacao de veiculo
@@ -251,7 +237,7 @@ def get_tipo_operacao_id(query: TipoOperacaoBuscaDelSchema):
 
 
 
-# ***************************************************  Metodos do tipo de operacao ***************************************
+# ***************************************************  Metodos de operacao ***************************************
 # Novo registro na tabela tipo_operacao do veiculo
 @app.post('/operacao', tags=[operacao_Tag],
           responses={"201": OperacaoViewSchema,
@@ -261,35 +247,22 @@ def add_operacao(form: OperacaoSchema):
     """ Adicionar a operacao """
     operacao = Operacao(      
       codigo_tipo_operacao =  form.codigo_tipo_operacao,
-      codigo_veiculo = form.codigo_veiculo,
+      placa_veiculo = form.placa_veiculo,
       observacao = form.observacao
     )
     
     try:
-        print("executando a consulta do veiculo")
-        print(f"valor parametro {operacao.codigo_veiculo}")
-        if not existe_veiculo(operacao.codigo_veiculo):
-            print("não existe o veiculo")
-            logger.debug(f"Adicionando a operacao com o veiculo {operacao.codigo_veiculo}")
-            error_msg = "O veículo não existe!"
-
-            logger.warning(
-                f"Erro ao adicionar a operacao\
-                    codigo tipo de operacao #'{operacao.codigo_tipo_operacao}'\
-                    e veiculo codigo #'{operacao.codigo_veiculo}', {error_msg}")
-
-            return '', 400   
-
+          
         # criando conexão com a base
         session = Session()
-        print("executando adicionando a operacao")
+        
         # adicionando  
         session.add(operacao)
 
         # efetivando o comando de adição de novo item na tabela
         session.commit()
         message = f"Adicionado operacao com o codigo tipo {operacao.codigo_tipo_operacao}\
-                  e veículo {operacao.codigo_veiculo}"
+                  e veículo {operacao.placa_veiculo}"
         logger.debug(message)
         logger.info(message)
         return apresenta_operacao(operacao), 200
@@ -388,16 +361,16 @@ def get_operacao_veiculo_id(query: OperacaoBuscaPorVeiculoSchema):
     Retorna uma lista de representações da operacao  
     """
 
-    codigo_veiculo = query.codigo_veiculo
+    placa_veiculo = query.placa_veiculo
 
     logger.debug(
-        f"Consultando a operacao por codigo veiculo = #{codigo_veiculo} ")
+        f"Consultando a operacao por codigo veiculo = #{placa_veiculo} ")
     try:
         # criando conexão com a base
         session = Session()
         # fazendo a busca
         operacoes = session.query(Operacao)\
-                             .filter(Operacao.codigo_veiculo == codigo_veiculo)
+                             .filter(Operacao.placa_veiculo == placa_veiculo)
 
         if not operacoes:
             # se não há cadastrado
@@ -406,7 +379,7 @@ def get_operacao_veiculo_id(query: OperacaoBuscaPorVeiculoSchema):
             return {"message": error_msg}, 404
         else:
             logger.debug(
-                f"A operacao com o código do veiculo #{codigo_veiculo} encontrado")
+                f"A operacao com o código do veiculo #{placa_veiculo} encontrado")
             # retorna a representação de  s
             return apresenta_lista_operacao(operacoes), 200
     except Exception as e:
@@ -502,20 +475,4 @@ def del_operacao(form: OperacaoBuscaDelSchema):
             {error_msg}")
 
         return {"message": error_msg}, 500
-
-""" Metodos privados 
-
-"""
-
-# Consulta a API de veiculo
-def existe_veiculo(codigo_veiculo: int):
-    try:        
-        response = pip._vendor.requests.get(f"http://127.0.0.1:5000/veiculo_id?codigo={codigo_veiculo}")
-        
-        if (len(response.text) == 0):
-            return False
-
-        return True
-
-    except Exception as e:
-        print(f"Ocorreu erro ao verificar se existe o veicul erro = {e}")
+ 
