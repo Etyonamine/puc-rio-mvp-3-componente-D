@@ -298,7 +298,7 @@ def get_operacoes():
 
         if not lista:
             # se não há operacaos cadastrados
-            return {"operacoes": []}, 200
+            return {"lista": []}, 200
         else:
             logger.debug(f"%d operacoes encontrados" %
                          len(lista))
