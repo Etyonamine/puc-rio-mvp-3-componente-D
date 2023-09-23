@@ -399,6 +399,7 @@ def upd_operacao(form: OperacaoEditSchema):
     """Editar a operacao cadastrado na base """
     codigo = form.codigo
     observacao = form.observacao
+    codigo_tipo = form.codigo_tipo_operacao
     
     logger.debug(f"Editando a operacao de operacao #{codigo}")
     try:
@@ -408,7 +409,7 @@ def upd_operacao(form: OperacaoEditSchema):
         
         count = session.query(Operacao).filter(
             Operacao.codigo == codigo)\
-                        .update({"observacao": observacao})
+                        .update({"observacao": observacao, "codigo_tipo_operacao": codigo_tipo})
 
         session.commit()
 

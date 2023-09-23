@@ -31,6 +31,7 @@ class OperacaoBuscaPorVeiculoSchema(BaseModel):
 class OperacaoEditSchema(BaseModel):
     """Define como será recebido os dados para a edição """
     codigo: int = 1
+    codigo_tipo_operacao: int = 1
     observacao: str = ""
 
 
@@ -57,6 +58,8 @@ def apresenta_operacao(operacao: Operacao):
         "codigo_tipo_operacao": operacao.codigo_tipo_operacao,
         "placa_veiculo": operacao.placa_veiculo,
         "observacao": operacao.observacao,
+        "data_entrada": operacao.data_entrada,
+        "data_saida": operacao.data_saida,
         "tipo_operacao": [{"codigo": operacao.codigo_tipo_operacao ,
                            "sigla": operacao.tipo_operacao.sigla,
                            "descricao": operacao.tipo_operacao.descricao
