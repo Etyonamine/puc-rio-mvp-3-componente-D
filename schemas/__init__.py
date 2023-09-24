@@ -6,4 +6,4 @@ from schemas.tipo_operacao import TipoOperacaoSchema, TipoOperacaoEditSchema, Ti
 
 from schemas.operacao import OperacaoSchema, OperacaoEditSchema, OperacaoBuscaDelSchema, OperacaoViewSchema,\
                              ListaOperacaosSchema, apresenta_operacao, apresenta_lista_operacao,\
-                             OperacaoBuscaPorVeiculoSchema
+                             OperacaoBuscaPorVeiculoSchema, OperacaoSaidaVeiculoSchema, OperacaoBuscaPorDataEntradaSchema

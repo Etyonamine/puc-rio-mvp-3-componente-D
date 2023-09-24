@@ -1,7 +1,12 @@
+from ctypes import cast
+from datetime import date, datetime
+import functools
 import json
+from pyclbr import Function
+from sqlite3 import Date
 from flask_openapi3 import OpenAPI, Info, Tag
 from flask import redirect
-
+from sqlalchemy import and_, func, null
 from sqlalchemy.exc import IntegrityError
 
 from model import Session, TipoOperacao, Operacao
@@ -248,7 +253,8 @@ def add_operacao(form: OperacaoSchema):
     operacao = Operacao(      
       codigo_tipo_operacao =  form.codigo_tipo_operacao,
       placa_veiculo = form.placa_veiculo,
-      observacao = form.observacao
+      observacao = form.observacao,
+      data_entrada = form.data_entrada
     )
     
     try:
@@ -351,6 +357,44 @@ def get_operacao_id(query: OperacaoBuscaDelSchema):
         return {"message": error_msg}, 500
 
 
+# Consulta por data de entrada 
+@app.get('/operacao_data_entrada', tags=[operacao_Tag],
+ responses={"200": ListaOperacaosSchema, "404": ErrorSchema,
+                    "500": ErrorSchema})
+def get_lista_por_data_entrada(query: OperacaoBuscaPorDataEntradaSchema):    
+    """ Consulta as operacoes 
+        Retorna uma listagem de representações das operacoes por data de entrada
+
+    """
+    data_entrada_param = query.data_entrada
+
+    logger.debug(f"Consultando as operacoes   ")
+    try:
+        # criando conexão com a base
+        session = Session()
+        print(data_entrada_param)
+        # fazendo a busca
+        lista = session.query(Operacao)\
+                       .filter(func.date(Operacao.data_entrada)  == data_entrada_param).all()
+                       
+
+        if not lista:
+            # se não há operacaos cadastrados
+            return {"lista": []}, 200
+        else:
+            logger.debug(f"%d operacoes encontrados" %
+                         len(lista))
+            # retorna a representação de tipo_operacaos
+            return apresenta_lista_operacao(lista), 200
+    except Exception as e:
+        # caso um erro fora do previsto
+        error_msg = f"Não foi possível consultar as operacoes de listas :/{str(e)}"
+        logger.warning(
+            f"Erro ao consultar as operacoes, {error_msg}")
+        return {"message": error_msg}, 500
+
+
+
 # Consulta por código de veiculo
 @app.get('/operacao_veiculo_id', tags=[operacao_Tag],
          responses={"200": OperacaoViewSchema, "404": ErrorSchema,
@@ -369,19 +413,20 @@ def get_operacao_veiculo_id(query: OperacaoBuscaPorVeiculoSchema):
         # criando conexão com a base
         session = Session()
         # fazendo a busca
-        operacoes = session.query(Operacao)\
-                             .filter(Operacao.placa_veiculo == placa_veiculo)
+        operacao = session.query(Operacao)\
+                             .filter(Operacao.placa_veiculo == placa_veiculo,\
+                                     Operacao.data_saida == None).first()
 
-        if not operacoes:
+        if not operacao:
             # se não há cadastrado
             error_msg = "Operacao não encontrado na base :/"
             logger.warning(f"Erro ao buscar a operacao error, {error_msg}")
-            return {"message": error_msg}, 404
+            return {"operacao:" : ''}, 404
         else:
             logger.debug(
                 f"A operacao com o código do veiculo #{placa_veiculo} encontrado")
             # retorna a representação de  s
-            return apresenta_lista_operacao(operacoes), 200
+            return apresenta_operacao(operacao), 200
     except Exception as e:
         # caso um erro fora do previsto
         error_msg = f"Não foi possível consultar a operacao:/{str(e)}"
@@ -477,3 +522,56 @@ def del_operacao(form: OperacaoBuscaDelSchema):
 
         return {"message": error_msg}, 500
  
+
+ 
+# Edicao registro na tabela operacao do veiculo
+@app.put('/operacao_saida_veiculo', tags=[operacao_Tag],
+         responses={"204": None,
+                    "404": ErrorSchema,
+                    "500": ErrorSchema})
+def upd_baixa_operacao(form: OperacaoSaidaVeiculoSchema):
+    """Edita a operacao cadastrado na base complementando os valores de saida do veiculo"""
+    codigo = form.codigo
+    data_saida = datetime.strptime(form.data_saida, "%Y-%m-%d %H:%M:%S")   
+    codigo_tipo = form.codigo_tipo_operacao
+    total_permanencia = form.total_permanencia
+    valor_total = form.valor_total
+    valor_base_calculo = form.valor_base_calculo
+
+    observacao = form.observacao
+    
+    
+    logger.debug(f"Editando a operacao de operacao #{codigo}")
+    try:
+
+        # criando conexão com a base
+        session = Session()
+        
+        count = session.query(Operacao).filter(
+            Operacao.codigo == codigo)\
+                        .update({"observacao": observacao,
+                                 "data_saida": data_saida,
+                                 "codigo_tipo_operacao": codigo_tipo,
+                                 "total_permanencia": total_permanencia,
+                                 "valor_total": valor_total,
+                                 "valor_base_calculo": valor_base_calculo })
+
+        session.commit()
+
+        if count:
+            message = f"Editado com sucesso a operacao com o código {codigo}!"
+            # retorna sem representação com apenas o codigo http 204
+            logger.debug(message)
+            return message, 204
+        else:
+            error_msg = f"A operacao com o código {codigo} não foi encontrado na base"
+            logger.warning(
+                f"Erro ao editar a operacao com o código {codigo} , {error_msg}")
+            return error_msg, 404
+
+    except Exception as e:
+        # caso um erro fora do previsto
+        error_msg = f"Não foi possível editar a operacao :/{e.__str__}"
+        logger.warning(
+            f"Erro ao editar a operacao com o código  #'{codigo}', {error_msg}")
+        return {"message": error_msg}, 500
