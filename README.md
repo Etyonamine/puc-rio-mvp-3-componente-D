@@ -3,7 +3,11 @@
 Este API é a parte backend da entrega do MVP para o terceiro (3º) sprint do  **Curso de Pós Graduação em Engenharia de software** 
 
 Serviço que tem o contexto de negocio de gravar informações de operação do estacionamento
- 
+
+## Documentos importantes
+    Arquivo com o diagrama de componentes com o nome de "Diagrama-componentes-MVP-Sprint-03.pdf".
+    Encontra-se na raiz do repositório.
+
 ## Instruções gerais
 ---
 01)Git e Python instalado no desktop e/ou notebook   
