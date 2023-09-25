@@ -125,7 +125,10 @@ def upd_tipo_operacao(form: TipoOperacaoEditSchema):
 
 # Remoção de um registro de tipo_operacao de veiculo
 @app.delete('/tipo_operacao', tags=[tipo_operacao_Tag],
-            responses={"204": None, "404": ErrorSchema, "500": ErrorSchema})
+            responses={"204": None,
+                       "400": ErrorSchema,
+                       "404": ErrorSchema,
+                       "500": ErrorSchema})
 def del_tipo_operacao(form: TipoOperacaoBuscaDelSchema):
     """Exclui uma tipo_operacao da base de dados através do atributo codigo
 
@@ -137,14 +140,15 @@ def del_tipo_operacao(form: TipoOperacaoBuscaDelSchema):
         # criando conexão com a base
         session = Session()
         # validar se está sendo utilizado no operacao  
-        """ operacao = session.query(Operacao)\
-                             .filter(Operacao.id_operacao_tip == codigo).first()
+        operacao = session.query(Operacao)\
+                             .filter(Operacao.codigo_tipo_operacao == codigo).first()
+        print(operacao)
 
         if operacao:
             # se há   cadastrado
-            error_msg = "Não é possível excluir! O Tipo de Operacao está associado há um ou mais operações."
+            error_msg = "O Tipo de Operacao está associado há um ou mais operações."
             logger.warning(f"Erro ao buscar a tipo_operacao de operacao , {error_msg}")
-            return {"message": error_msg}, 400                """
+            return {"message": error_msg}, 400                
 
         # fazendo a remoção
         count = session.query(TipoOperacao).filter(
@@ -173,7 +177,9 @@ def del_tipo_operacao(form: TipoOperacaoBuscaDelSchema):
 
 # Consulta de todos as tipo_operacaos
 @app.get('/tipo_operacoes', tags=[tipo_operacao_Tag],
-         responses={"200": ListaTipoOperacaosSchema, "500": ErrorSchema})
+         responses={"200": ListaTipoOperacaosSchema,
+                    "404": ErrorSchema,
+                    "500": ErrorSchema})
 def get_tipo_operacaos():
     """Consulta as tipo_operacoes 
 
@@ -187,8 +193,9 @@ def get_tipo_operacaos():
         lista = session.query(TipoOperacao).all()
 
         if not lista:
+            error_msg = 'Não foi encontrado registros'
             # se não há tipo_operacaos cadastrados
-            return {"tipo_operacoes": []}, 200
+            return {"message":error_msg}, 404
         else:
             logger.debug(f"%d tipo_operacoes encontrados" %
                          len(lista))
@@ -289,7 +296,9 @@ def add_operacao(form: OperacaoSchema):
 
 # Consulta de todos as operacoes
 @app.get('/operacoes', tags=[operacao_Tag],
-         responses={"200": ListaOperacaosSchema, "500": ErrorSchema})
+         responses={"200": ListaOperacaosSchema, 
+                    "404": ErrorSchema,
+                    "500": ErrorSchema})
 def get_operacoes():
     """Consulta as operacoes 
 
@@ -301,10 +310,12 @@ def get_operacoes():
         session = Session()
         # fazendo a busca
         lista = session.query(Operacao).all()
-
+        print(len(lista))
+        
         if not lista:
+            error_msg = 'Não foi encontrado registros!'
             # se não há operacaos cadastrados
-            return {"lista": []}, 200
+            return {"message": error_msg}, 404
         else:
             logger.debug(f"%d operacoes encontrados" %
                          len(lista))
@@ -379,8 +390,9 @@ def get_lista_por_data_entrada(query: OperacaoBuscaPorDataEntradaSchema):
                        
 
         if not lista:
+            error_msg = 'Não foi encontrado registros!'
             # se não há operacaos cadastrados
-            return {"lista": []}, 200
+            return {"message": error_msg}, 404
         else:
             logger.debug(f"%d operacoes encontrados" %
                          len(lista))
@@ -438,6 +450,7 @@ def get_operacao_veiculo_id(query: OperacaoBuscaPorVeiculoSchema):
 # Edicao registro na tabela operacao do veiculo
 @app.put('/operacao', tags=[operacao_Tag],
          responses={"204": None,
+                    "400": ErrorSchema,
                     "404": ErrorSchema,
                     "500": ErrorSchema})
 def upd_operacao(form: OperacaoEditSchema):
@@ -451,7 +464,7 @@ def upd_operacao(form: OperacaoEditSchema):
 
         # criando conexão com a base
         session = Session()
-        
+               
         count = session.query(Operacao).filter(
             Operacao.codigo == codigo)\
                         .update({"observacao": observacao, "codigo_tipo_operacao": codigo_tipo})

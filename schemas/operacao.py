@@ -23,7 +23,7 @@ class OperacaoViewSchema(BaseModel):
     data_saida: datetime 
     codigo_tipo_operacao: int = 1
     placa_veiculo: str = "ABC1234"
-    tipo_operacao: TipoOperacaoViewSchema
+    tipo_operacao: TipoOperacaoViewSchema 
     total_permanencia: int = 0
     valor_total: float = 0 
     valor_base_calculo: float = 0 
@@ -75,7 +75,7 @@ class ListaOperacaosSchema(BaseModel):
 def apresenta_operacao(operacao: Operacao):
     """ Retorna uma representação de um Operacao seguindo o schema definido em
         OperacaoViewSchema.
-    """
+    """    
     return {
         "codigo": operacao.codigo,
         "codigo_tipo_operacao": operacao.codigo_tipo_operacao,
@@ -86,7 +86,7 @@ def apresenta_operacao(operacao: Operacao):
         "total_permanencia": operacao.total_permanencia,
         "valor_total": operacao.valor_total,
         "valor_base_calculo": operacao.valor_base_calculo,
-        "tipo_operacao": [{"codigo": operacao.codigo_tipo_operacao ,
+        "tipo_operacao": [  {"codigo": operacao.codigo_tipo_operacao ,
                            "sigla": operacao.tipo_operacao.sigla,
                            "descricao": operacao.tipo_operacao.descricao
                            }]
