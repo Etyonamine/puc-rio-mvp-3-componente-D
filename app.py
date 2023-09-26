@@ -310,8 +310,7 @@ def get_operacoes():
         session = Session()
         # fazendo a busca
         lista = session.query(Operacao).all()
-        print(len(lista))
-        
+        print(lista)
         if not lista:
             error_msg = 'Não foi encontrado registros!'
             # se não há operacaos cadastrados
@@ -433,7 +432,7 @@ def get_operacao_veiculo_id(query: OperacaoBuscaPorVeiculoSchema):
             # se não há cadastrado
             error_msg = "Operacao não encontrado na base :/"
             logger.warning(f"Erro ao buscar a operacao error, {error_msg}")
-            return {"operacao:" : ''}, 404
+            return {"message:" : error_msg}, 404
         else:
             logger.debug(
                 f"A operacao com o código do veiculo #{placa_veiculo} encontrado")

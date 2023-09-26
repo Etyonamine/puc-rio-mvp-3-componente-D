@@ -87,8 +87,8 @@ def apresenta_operacao(operacao: Operacao):
         "valor_total": operacao.valor_total,
         "valor_base_calculo": operacao.valor_base_calculo,
         "tipo_operacao": [  {"codigo": operacao.codigo_tipo_operacao ,
-                           "sigla": operacao.tipo_operacao.sigla,
-                           "descricao": operacao.tipo_operacao.descricao
+                             "sigla": operacao.tipo_operacao.sigla,
+                             "descricao": operacao.tipo_operacao.descricao
                            }]
         
     }
@@ -113,9 +113,9 @@ def apresenta_lista_operacao(lista: List[Operacao]):
             "valor_total": item.valor_total,
             "valor_base_calculo": item.valor_base_calculo,
             "tipo_operacao": [{"codigo": item.codigo_tipo_operacao ,
-                            "sigla": item.tipo_operacao.sigla,
-                            "descricao": item.tipo_operacao.descricao
-                            }]
+                             "sigla": item.tipo_operacao.sigla,
+                             "descricao": item.tipo_operacao.descricao
+                           }]
         })
 
     return {"lista": result}    
