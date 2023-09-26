@@ -195,7 +195,7 @@ def get_tipo_operacaos():
         if not lista:
             error_msg = 'Não foi encontrado registros'
             # se não há tipo_operacaos cadastrados
-            return {"message":error_msg}, 404
+            return {"lista":[]}, 200
         else:
             logger.debug(f"%d tipo_operacoes encontrados" %
                          len(lista))
@@ -312,9 +312,9 @@ def get_operacoes():
         lista = session.query(Operacao).all()
         print(lista)
         if not lista:
-            error_msg = 'Não foi encontrado registros!'
+            
             # se não há operacaos cadastrados
-            return {"message": error_msg}, 404
+            return {"lista": []}, 200
         else:
             logger.debug(f"%d operacoes encontrados" %
                          len(lista))
@@ -391,7 +391,7 @@ def get_lista_por_data_entrada(query: OperacaoBuscaPorDataEntradaSchema):
         if not lista:
             error_msg = 'Não foi encontrado registros!'
             # se não há operacaos cadastrados
-            return {"message": error_msg}, 404
+            return {"lista": []}, 200
         else:
             logger.debug(f"%d operacoes encontrados" %
                          len(lista))
