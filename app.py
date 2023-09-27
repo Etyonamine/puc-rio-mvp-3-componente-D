@@ -309,7 +309,7 @@ def get_operacoes():
         # criando conexão com a base
         session = Session()
         # fazendo a busca
-        lista = session.query(Operacao).all()
+        lista = session.query(Operacao).order_by(Operacao.data_entrada.asc()).all()
         print(lista)
         if not lista:
             
